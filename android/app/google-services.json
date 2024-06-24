@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "678784430759",
+    "project_id": "location-predtiction-db",
+    "storage_bucket": "location-predtiction-db.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:678784430759:android:97a76b1622126870fa6182",
+        "android_client_info": {
+          "package_name": "com.example.my_location"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCWcETQcV81vmpYXns2JbS-O6RZxyKa6a4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
