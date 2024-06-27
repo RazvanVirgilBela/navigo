@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'history_page.dart';
+import 'prediction_location_page.dart'; // Import the PredictionLocationPage
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,7 +37,7 @@ class _HomePageState extends State<HomePage> {
   String _userName = 'Loading...';
   StreamSubscription<Position>? _positionStreamSubscription;
   GoogleMapController? _mapController;
-  LatLng? _initialPosition; // Changed from const LatLng to nullable
+  LatLng? _initialPosition;
   List<LatLng> _routePoints = [];
   final Set<Polyline> _polylines = {};
   Marker? _currentLocationMarker;
@@ -130,7 +132,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _updateLocation(Position position) {
+  Future<void> _updateLocation(Position position) async {
     LatLng newPosition = LatLng(position.latitude, position.longitude);
     _routePoints.add(newPosition);
 
@@ -155,6 +157,16 @@ class _HomePageState extends State<HomePage> {
         CameraUpdate.newLatLng(newPosition),
       );
     }
+
+    // Save location to Firestore
+    String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    if (userId.isNotEmpty) {
+      await FirebaseFirestore.instance.collection('users').doc(userId).collection('locations').add({
+        'latitude': position.latitude,
+        'longitude': position.longitude,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+    }
   }
 
   void _signOut() {
@@ -171,27 +183,83 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_userName),
+        backgroundColor: Colors.green.shade500,
+        title: Text(
+          _userName,
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
+            fontSize: 22,
+          ),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(
+              Icons.history,
+              color: Colors.white
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const HistoryPage()),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(
+              Icons.logout, 
+              color: Colors.white
+            ),
             onPressed: _signOut,
           ),
         ],
       ),
-      body: _initialPosition == null
-          ? const Center(child: CircularProgressIndicator())
-          : GoogleMap(
-              initialCameraPosition: CameraPosition(
-                target: _initialPosition!,
-                zoom: 14.0,
-              ),
-              onMapCreated: (GoogleMapController controller) {
-                _mapController = controller;
+      body: Stack(
+        children: [
+          _initialPosition == null
+              ? const Center(child: CircularProgressIndicator())
+              : GoogleMap(
+                  myLocationButtonEnabled: false,
+                  zoomControlsEnabled: false,
+                  initialCameraPosition: CameraPosition(
+                    target: _initialPosition!,
+                    zoom: 14.0,
+                  ),
+                  onMapCreated: (GoogleMapController controller) {
+                    _mapController = controller;
+                  },
+                  polylines: _polylines,
+                  markers: _currentLocationMarker != null ? {_currentLocationMarker!} : {},
+                ),
+          Positioned(
+            bottom: 16,
+            left: 16,
+            child: FloatingActionButton(
+              backgroundColor:  Colors.green.shade700,
+              foregroundColor: Colors.white,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const PredictionLocationPage()),
+                );
               },
-              polylines: _polylines,
-              markers: _currentLocationMarker != null ? {_currentLocationMarker!} : {},
+              child: Icon(Icons.location_on),
             ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.green.shade700,
+        foregroundColor:  Colors.white,
+        onPressed: () {
+          if (_currentLocationMarker != null && _mapController != null) {
+            _mapController!.animateCamera(
+              CameraUpdate.newLatLng(_currentLocationMarker!.position),
+            );
+          }
+        },
+        child: Icon(Icons.my_location),
+      ),
     );
   }
 }
