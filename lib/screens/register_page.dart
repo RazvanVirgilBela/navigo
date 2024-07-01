@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:my_location/models/user_model.dart';
+import 'package:my_location/services/firebase_services.dart';
 
 class RegisterPage extends StatefulWidget {
   final VoidCallback showLoginPage;
@@ -15,7 +17,7 @@ class RegisterPage extends StatefulWidget {
 }
 
 class RegisterPageState extends State<RegisterPage> {
-  // Text controllers
+   final FirebaseService _firebaseService = FirebaseService();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -37,47 +39,30 @@ class RegisterPageState extends State<RegisterPage> {
   Future<void> signUp() async {
     if (passwordConfirmed()) {
       try {
-        // Create user
-        UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-        );
-
-        // Add user details
-        addUserDetails(
-          userCredential.user!.uid,
-          _firstNameController.text.trim(),
-          _lastNameController.text.trim(),
+        User? user = await _firebaseService.registerWithEmailAndPassword(
           _emailController.text.trim(),
-          int.parse(_ageController.text.trim()),
+          _passwordController.text.trim(),
         );
+        if (user != null) {
+          UserModel userModel = UserModel(
+            uid: user.uid,
+            email: user.email!,
+            firstName: _firstNameController.text.trim(),
+            lastName: _lastNameController.text.trim(),
+            age: int.parse(_ageController.text.trim()),
+          );
+          await _firebaseService.addUserData(user.uid, userModel.toMap());
+        }
       } catch (e) {
-        // Handle error
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: $e')),
         );
       }
     } else {
-      // Handle password mismatch
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Passwords do not match')),
       );
     }
-  }
-
-  Future<void> addUserDetails(
-    String userId,
-    String firstName,
-    String lastName,
-    String email,
-    int age,
-  ) async {
-    await FirebaseFirestore.instance.collection('users').doc(userId).set({
-      'first name': firstName,
-      'last name': lastName,
-      'age': age,
-      'email': email,
-    });
   }
 
   bool passwordConfirmed() {

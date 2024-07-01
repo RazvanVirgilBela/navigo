@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:my_location/pages/login_page.dart';
-import 'package:my_location/pages/register_page.dart';
+import 'package:my_location/screens/login_page.dart';
+import 'package:my_location/screens/register_page.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -10,7 +10,6 @@ class AuthPage extends StatefulWidget {
 }
 
 class _AuthPageState extends State<AuthPage> {
-  //initially, show the loginpage
   bool showLoginPage = true;
 
   void toggleScreens(){

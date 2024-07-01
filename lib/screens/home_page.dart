@@ -7,7 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'history_page.dart';
-import 'prediction_location_page.dart'; // Import the PredictionLocationPage
+import 'prediction_location_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -158,7 +158,6 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
-    // Save location to Firestore
     String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
     if (userId.isNotEmpty) {
       await FirebaseFirestore.instance.collection('users').doc(userId).collection('locations').add({
@@ -240,7 +239,7 @@ class _HomePageState extends State<HomePage> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const PredictionLocationPage()),
+                  MaterialPageRoute(builder: (context) => PredictionLocationPage()),
                 );
               },
               child: Icon(Icons.location_on),

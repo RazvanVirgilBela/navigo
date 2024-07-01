@@ -45,6 +45,9 @@ dependencies:
   google_maps_flutter: ^2.7.0
   http: ^1.2.1
   intl: ^0.19.0
+  ml_algo: ^16.17.10
+  ml_linalg: ^13.12.6
+  
 
 dev_dependencies:
   flutter_test:
